@@ -56,4 +56,6 @@ if st.button("전문 용어로 변환하기"):
                 st.write(response.text)
 
             except Exception as e:
-                st.error("🚨 서버 설정 오류가 발생했습니다. 센터장에게 문의하세요.")
+                st.error(f"🚨 상세 에러 로그: {e}")
+
+               
