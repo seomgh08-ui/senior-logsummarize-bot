@@ -17,8 +17,8 @@ user_input = st.text_area(
 
 # ★ 수정된 부분: 버튼을 2개로 나누어 나란히 배치합니다.
 col1, col2 = st.columns(2)
-btn_official = col1.button("📄 공단 제출용 리포트 생성", use_container_width=True)
-btn_guardian = col2.button("💌 보호자 전송용 알림톡 생성", use_container_width=True)
+btn_official = col1.button("공단 제출용 리포트 생성", use_container_width=True)
+btn_guardian = col2.button(" 보호자 전송용 알림톡 생성", use_container_width=True)
 
 # 두 버튼 중 하나라도 눌렸을 때 실행됩니다.
 if btn_official or btn_guardian:
@@ -82,3 +82,4 @@ if btn_official or btn_guardian:
 
             except Exception as e:
                 st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
+
