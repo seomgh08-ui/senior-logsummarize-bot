@@ -3,7 +3,7 @@
 import streamlit as st
 import google.generativeai as genai 
 
-st.set_page_config(page_title="어르신 관찰일지 자동 요약 봇", page_icon="👴", layout="centered")
+st.set_page_config(page_title="어르신 관찰일지 자동 요약 봇", page_icon="📝", layout="centered")
 
 st.title(" 어르신 상태 관찰일지 자동 요약 ")
 st.markdown("단어 몇 개만 툭툭 입력하세요. 공단 제출용 전문 리포트로 자동 변환해 드립니다.")
@@ -17,9 +17,9 @@ user_input = st.text_area(
 
 if st.button("전문 용어로 변환하기"):
     if user_input == "":
-        st.warning("⚠️ 내용을 먼저 입력해 주세요!")
+        st.warning("내용을 먼저 입력해 주세요!")
     else:
-        with st.spinner("전문 용어로 변환 중입니다... 🍳"):
+        with st.spinner("전문 용어로 변환 중입니다... "):
             try:
                 # ★ 핵심 보안 로직: 서버의 비밀 금고(secrets)에서 API 키를 몰래 꺼내옵니다.
                 # 복지사님들은 화면에서 API 키를 입력할 필요가 전혀 없습니다.
@@ -62,8 +62,9 @@ if st.button("전문 용어로 변환하기"):
                 st.write(response.text)
 
             except Exception as e:
-                st.error(f"🚨 상세 에러 로그: {e}")
+                st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
 
                
+
 
 
