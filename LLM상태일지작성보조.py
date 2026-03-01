@@ -41,7 +41,7 @@ if st.button("전문 용어로 변환하기"):
                 """
                 
                 model = genai.GenerativeModel(
-                    model_name="gemini-1.5-flash",
+                    model_name="gemini-2.5-flash",
                     system_instruction=system_prompt
                 )
                 
@@ -59,3 +59,4 @@ if st.button("전문 용어로 변환하기"):
                 st.error(f"🚨 상세 에러 로그: {e}")
 
                
+
