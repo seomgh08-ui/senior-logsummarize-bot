@@ -1,4 +1,3 @@
-# 파일명: app.py
 
 import streamlit as st
 import google.generativeai as genai 
@@ -80,6 +79,7 @@ if btn_official or btn_guardian:
 
             except Exception as e:
                 st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
+
 
 
 
