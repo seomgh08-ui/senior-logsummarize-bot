@@ -6,18 +6,18 @@ import google.generativeai as genai
 st.set_page_config(page_title="어르신 관찰일지 & 알림톡 봇", page_icon="📝", layout="centered")
 
 st.title("📝 어르신 관찰일지 & 알림톡 자동 요약")
-st.markdown("단어 몇 개만 툭툭 입력하세요. 공단 제출용 리포트와 보호자용 알림톡으로 자동 변환해 드립니다.")
+st.markdown("단어 몇 개만 툭툭 적어주세요. 공단 제출용과 보호자님꼐 보낼 알림톡으로 자동으로 바꿔 써 드립니다.")
 
 # 사용자가 입력하는 창
 user_input = st.text_area(
-    label="오늘 어르신의 상태를 간단히 입력하세요", 
+    label="오늘 어르신의 상태를 간단히 적어주세요", 
     placeholder="예: 오늘 김할머니 점심 반 공기 드심. 기침 3번 하심. 운동 30분 함(신체상태, 정신상태 꼭 기재!)",
     height=150
 )
 
 # ★ 수정된 부분: 버튼을 2개로 나누어 나란히 배치합니다.
 col1, col2 = st.columns(2)
-btn_official = col1.button("공단 제출용 리포트 생성", use_container_width=True)
+btn_official = col1.button("공단 제출용 생성", use_container_width=True)
 btn_guardian = col2.button(" 보호자 전송용 알림톡 생성", use_container_width=True)
 
 # 두 버튼 중 하나라도 눌렸을 때 실행됩니다.
@@ -80,6 +80,7 @@ if btn_official or btn_guardian:
 
             except Exception as e:
                 st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
+
 
 
 
