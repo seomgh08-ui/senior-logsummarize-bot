@@ -4,7 +4,7 @@ import google.generativeai as genai
 
 st.set_page_config(page_title="어르신 관찰일지 & 알림톡 봇", page_icon="📝", layout="centered")
 
-st.title("📝 어르신 관찰일지 & 알림톡 자동 요약")
+st.title("어르신 관찰일지 & 알림톡 자동 요약")
 st.markdown("단어 몇 개만 툭툭 적어주세요. 공단 제출용과 보호자님꼐 보낼 알림톡으로 자동으로 바꿔 써 드립니다.")
 
 # 사용자가 입력하는 창
@@ -79,6 +79,7 @@ if btn_official or btn_guardian:
 
             except Exception as e:
                 st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
+
 
 
 
