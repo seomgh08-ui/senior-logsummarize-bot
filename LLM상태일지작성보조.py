@@ -22,9 +22,6 @@ user_input = st.text_area(
     height=150
 )
 
-# ★ 법적 책임 명확화를 위한 방어막 (Human-in-the-Loop)
-agree = st.checkbox("본 기록은 본인이 실제 관찰하고 제공한 서비스에 기반함을 확인합니다.")
-
 # 버튼을 2개로 나누어 나란히 배치합니다.
 col1, col2 = st.columns(2)
 btn_official = col1.button("공단 제출용 생성", use_container_width=True)
@@ -34,9 +31,6 @@ btn_guardian = col2.button("보호자 전송용 알림톡 생성", use_container
 if btn_official or btn_guardian:
     if user_input == "":
         st.warning("내용을 먼저 입력해 주세요!")
-    elif not agree:
-        # ★ 체크박스를 누르지 않으면 API 호출 자체를 막습니다.
-        st.warning("진행하시려면 '관찰 사실 확인'에 체크해 주세요.")
     else:
         with st.spinner("요청하신 양식으로 변환 중입니다... "):
             try:
@@ -104,6 +98,7 @@ if btn_official or btn_guardian:
 
             except Exception as e:
                 st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
+
 
 
 
