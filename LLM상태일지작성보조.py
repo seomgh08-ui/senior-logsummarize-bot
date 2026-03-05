@@ -1,36 +1,52 @@
 
 import streamlit as st
 import google.generativeai as genai 
+import re # 정규표현식 라이브러리
+
+# 개인정보 필터링  (서버 전송 전 로컬에서 무조건 실행)
+def mask_pii(text):
+    # '김할머니', '박할아버지', '이철수어르신' 같은 패턴을 찾아 수급자로 치환
+    pattern = r'[가-힣]{1,3}(할머니|할아버지|어르신|님)'
+    safe_text = re.sub(pattern, '수급자', text)
+    return safe_text
 
 st.set_page_config(page_title="어르신 관찰일지 & 알림톡 봇", page_icon="📝", layout="centered")
 
 st.title("어르신 관찰일지 & 알림톡 자동 요약")
-st.markdown("단어 몇 개만 툭툭 적어주세요. 공단 제출용과 보호자님꼐 보낼 알림톡으로 자동으로 바꿔 써 드립니다.")
+st.markdown("단어 몇 개만 툭툭 적어주세요. 공단 제출용과 보호자님께 보낼 알림톡으로 자동으로 바꿔 써 드립니다.")
 
 # 사용자가 입력하는 창
 user_input = st.text_area(
     label="오늘 어르신의 상태를 간단히 적어주세요", 
-    placeholder="예: 오늘 점심 반 공기 드심. 기침 3번 하심. 운동 30분 함(신체상태, 정신상태 꼭 기재、!!!어르신 실명 절대 적지 말것!!!)",
+    placeholder="예: 오늘 김할머니 점심 반 공기 드심. 기침 3번 하심. 운동 30분 함(신체상태, 정신상태 꼭 기재!)",
     height=150
 )
 
-# ★ 수정된 부분: 버튼을 2개로 나누어 나란히 배치합니다.
+# ★ 법적 책임 명확화를 위한 방어막 (Human-in-the-Loop)
+agree = st.checkbox("본 기록은 본인이 실제 관찰하고 제공한 서비스에 기반함을 확인합니다.")
+
+# 버튼을 2개로 나누어 나란히 배치합니다.
 col1, col2 = st.columns(2)
 btn_official = col1.button("공단 제출용 생성", use_container_width=True)
-btn_guardian = col2.button(" 보호자 전송용 알림톡 생성", use_container_width=True)
+btn_guardian = col2.button("보호자 전송용 알림톡 생성", use_container_width=True)
 
 # 두 버튼 중 하나라도 눌렸을 때 실행됩니다.
 if btn_official or btn_guardian:
     if user_input == "":
-        st.warning(" 내용을 먼저 입력해 주세요!")
+        st.warning("내용을 먼저 입력해 주세요!")
+    elif not agree:
+        # ★ 체크박스를 누르지 않으면 API 호출 자체를 막습니다.
+        st.warning("진행하시려면 '관찰 사실 확인'에 체크해 주세요.")
     else:
         with st.spinner("요청하신 양식으로 변환 중입니다... "):
             try:
-                # ★ 핵심 보안 로직 (기존 코드 완벽 유지)
+                # ★ [핵심 보안 로직] 서버로 보내기 전, 로컬에서 이름 비식별화
+                safe_input = mask_pii(user_input)
+
                 api_key = st.secrets["GEMINI_API_KEY"]
                 genai.configure(api_key=api_key)
                 
-                # ★ 눌린 버튼에 따라 프롬프트를 다르게 설정합니다.
+                # 눌린 버튼에 따라 프롬프트를 다르게 설정합니다.
                 if btn_official:
                     system_prompt = """
                     너는 국민건강보험공단 규정을 엄격히 준수하는 '방문요양 관찰일지 문체 교정 보조 AI'야.
@@ -41,12 +57,10 @@ if btn_official or btn_guardian:
                     [작성 규칙]
                     1. 사실 창조 금지 (Zero Hallucination): 사용자가 입력한 단어와 사실 외에는 절대 어떤 증상, 식사량, 배변 상태, 기분, 처치 내용도 임의로 덧붙이거나 지어내지 마라. (위반 시 법적 허위 기록에 해당함)
                     2. 객관적 문체 사용: 감정적인 표현은 배제하고, "~하심", "~관찰됨", "~호소하심", "~도움을 제공함" 등 요양 실무 표준 용어와 건조한 문어체로만 작성하라.
-                    3. 정보 부족 시 거절: 사용자의 입력이 너무 짧거나 사실관계를 알 수 없는 경우(예: "오늘 좋았음"), 문장을 지어내지 말고 "어르신의 식사량, 인지 상태, 신체 상태 등에 대한 구체적인 단어를 더 입력해 주세요."라고 정중히 요청하라.
-                       익명성 유지: 특정 어르신의 이름이 입력되더라도 출력할 때는 항상 "수급자 어르신" 또는 "어르신"으로 대체하여 개인정보를 보호하라.
+                    3. 정보 부족 시 거절: 사용자의 입력이 너무 짧거나 사실관계를 알 수 없는 경우, 문장을 지어내지 말고 "어르신의 식사량, 인지 상태, 신체 상태 등에 대한 구체적인 단어를 더 입력해 주세요."라고 정중히 요청하라.
                     
                     [출력 포맷]
                     ■ 일일 상태 관찰 기록
-                    [출력 포맷]
                     1. 식사 및 영양: (입력된 식사 관련 내용)
                     2. 신체 및 수면: (입력된 수면, 기침 등 신체 상태)
                     3. 활동 및 특이사항: (기타 활동이나 특이사항 간략히, 없으면 '특이사항 없음' 처리)
@@ -64,12 +78,12 @@ if btn_official or btn_guardian:
                     
                     [작성 규칙]
                     1. 보호자(자녀)에게 보내는 다정하고 예의 바른 존댓말(~해요, ~습니다, ~했어요)을 사용할 것.
-                    2. 어르신이 센터에서 편안하고 즐겁게 지내고 계심이 잘 느껴지도록 긍정적이고 안심을 주는 톤을 유지할 것. 단、 날조는 절대 하지 말 것。
+                    2. 어르신이 센터에서 편안하고 즐겁게 지내고 계심이 잘 느껴지도록 긍정적이고 안심을 주는 톤을 유지할 것. 단, 날조는 절대 하지 말 것.
                     3. 딱딱한 전문 용어보다는 일상적이고 부드러운 표현을 사용할 것.
-                    4. 문장 끝에 상황에 맞는 이모티콘(😊, 💕 등)을 자연스럽게 섞어서 친근함을 더해줄 것(3번이하사용).
+                    4. 문장 끝에 상황에 맞는 이모티콘(😊, 💕 등)을 자연스럽게 섞어서 친근함을 더해줄 것(3번 이하 사용).
                     """
                 
-                # ★ 기존 모델 생성 및 호출 로직 (기존 코드 완벽 유지)
+                # 모델 생성 및 호출
                 model = genai.GenerativeModel(
                     model_name="gemini-2.5-flash",
                     system_instruction=system_prompt
@@ -77,16 +91,20 @@ if btn_official or btn_guardian:
                 
                 generation_config = genai.types.GenerationConfig(temperature=0.3)
                 
+                # ★ [매우 중요] 외부 API로 날아가는 데이터는 user_input이 아니라 필터링이 끝난 safe_input입니다!
                 response = model.generate_content(
-                    user_input, 
+                    safe_input, 
                     generation_config=generation_config
                 )
                 
-                st.success(" 변환이 완료되었습니다!")
-                st.write(response.text)
+                st.success("변환이 완료되었습니다!")
+                
+                # 결과를 보기 좋게 출력
+                st.info(response.text)
 
             except Exception as e:
                 st.error(f"에러발생, 센터장에게 문의해주세요. 상세 에러 로그: {e}")
+
 
 
 
